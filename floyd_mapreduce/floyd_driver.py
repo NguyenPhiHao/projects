@@ -82,6 +82,7 @@ def run_iteration(k, input_hdfs, output_hdfs):
     )
     cmd = (
         f'hadoop jar "{HADOOP_STREAMING}" '
+        f'-D mapreduce.job.maps=1 '       # thêm dòng này
         f'-D mapreduce.job.reduces=1 '
         f'-files "{files_list}" '
         f'-mapper {mapper} -reducer {reducer} '
