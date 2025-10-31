@@ -19,13 +19,19 @@ def parse_value(val):
 def fmt(d):
     if d == math.inf:
         return "INF"
-    if d.is_integer():
+    if float(d).is_integer():
         return str(int(d))
     return str(round(d, 2))
 
-current = None
-best_d = math.inf
-best_path = ""
+def flush_i(i_key, best_by_j):
+    if i_key is None:
+        return
+    for j in sorted(best_by_j.keys(), key=lambda x: int(x)):
+        d, p = best_by_j[j]
+        print(f"{i_key}\t{j}\t{fmt(d)}|{p}")
+
+current_i = None
+best_by_j = {}  # j -> (best_d, best_path)
 
 for line in sys.stdin:
     line = line.strip()
@@ -34,19 +40,19 @@ for line in sys.stdin:
     parts = line.replace("\t", " ").split()
     if len(parts) < 3:
         continue
-    key = (parts[0], parts[1])
-    d, p = parse_value(parts[2])
-    if current is None:
-        current = key
-        best_d, best_path = d, p
-        continue
-    if key != current:
-        print(f"{current[0]}\t{current[1]}\t{fmt(best_d)}|{best_path}")
-        current = key
-        best_d, best_path = d, p
-    else:
-        if d < best_d:
-            best_d, best_path = d, p
 
-if current is not None:
-    print(f"{current[0]}\t{current[1]}\t{fmt(best_d)}|{best_path}")
+    i, j = parts[0], parts[1]
+    d, p = parse_value(parts[2])
+
+    if current_i is None:
+        current_i = i
+    elif i != current_i:
+        flush_i(current_i, best_by_j)
+        current_i = i
+        best_by_j = {}
+
+    prev = best_by_j.get(j, (math.inf, ""))
+    if d < prev[0]:
+        best_by_j[j] = (d, p)
+
+flush_i(current_i, best_by_j)
